@@ -17,6 +17,9 @@ Please delete options that are not relevant.
 
 Please describe the tests required to verify your changes. Provide instructions so PR Tester can check functionality. Please also list any relevant details for your tests
 
+- [ ] SQL Script runs
+- [ ] All tests pass
+
 
 
 # Checklist:
@@ -26,3 +29,4 @@ Please describe the tests required to verify your changes. Provide instructions 
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] My changes generate no new warnings or errors
 - [ ] I have added test instructions that prove my fix is effective or that my feature works
+- [ ] I have written tests for all of the code
