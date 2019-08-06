@@ -40,29 +40,38 @@ namespace BangazonAPI.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     
-                    cmd.CommandText = @"SELECT p.Id, p.ProductTypeId, p.CustomerId, p.Price, p.Title, p.Description, p.Quantity 
-                    FROM Product p";
+                    cmd.CommandText = @"SELECT p.Id AS ProductId, p.Price, p.Title, p.Description, p.Quantity, p.CustomerId, p.ProductTypeId, 
+                                            c.Id, c.FirstName, c.LastName, 
+                                            pt.Id, pt.Name AS ProductTypeName
+                                        FROM Customer c
+                                        JOIN Product p ON c.Id = p.CustomerId
+                                        JOIN ProductType pt ON pt.Id = p.CustomerId";
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
                     List<Product> products = new List<Product>();
                     while (reader.Read())
                     {
-                        Product product = new Product
+                        Customer customer = new Customer
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                            LastName = reader.GetString(reader.GetOrdinal("LastName"))
+                        };
+                        ProductType productType = new ProductType
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Name = reader.GetString(reader.GetOrdinal("ProductTypeName"))
+                        };
+                        Product product = new Product
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
                             Price = reader.GetSqlMoney(reader.GetOrdinal("Price")).ToDouble(),
                             Title = reader.GetString(reader.GetOrdinal("Title")),
                             Description = reader.GetString(reader.GetOrdinal("Description")),
                             Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
                             CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
-                            ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId"))
-                        };
-                        Customer customer = new Customer
-                        {
-
-                        };
-                        ProductType productType = new ProductType
-                        {
-
+                            ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                            Customer = customer,
+                            ProductType = productType
                         };
                         products.Add(product);
                     }
