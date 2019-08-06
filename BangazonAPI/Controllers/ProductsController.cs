@@ -41,8 +41,8 @@ namespace BangazonAPI.Controllers
                 {
                     
                     cmd.CommandText = @"SELECT p.Id AS ProductId, p.Price, p.Title, p.Description, p.Quantity, p.CustomerId, p.ProductTypeId, 
-                                            c.Id, c.FirstName, c.LastName, 
-                                            pt.Id, pt.Name AS ProductTypeName
+                                            c.Id AS CustId, c.FirstName, c.LastName, 
+                                            pt.Id AS ProdTypeId, pt.Name AS ProductTypeName
                                         FROM Customer c
                                         JOIN Product p ON c.Id = p.CustomerId
                                         JOIN ProductType pt ON pt.Id = p.CustomerId";
@@ -52,13 +52,13 @@ namespace BangazonAPI.Controllers
                     {
                         Customer customer = new Customer
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Id = reader.GetInt32(reader.GetOrdinal("CustId")),
                             FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                             LastName = reader.GetString(reader.GetOrdinal("LastName"))
                         };
                         ProductType productType = new ProductType
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Id = reader.GetInt32(reader.GetOrdinal("ProdTypeId")),
                             Name = reader.GetString(reader.GetOrdinal("ProductTypeName"))
                         };
                         Product product = new Product
@@ -81,42 +81,57 @@ namespace BangazonAPI.Controllers
             }
         }
         // GET api/products/5
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> Get(int id)
-        //{
-        //    using (SqlConnection conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (SqlCommand cmd = conn.CreateCommand())
-        //        {
-        //            cmd.CommandText = @"
-        //                SELECT
-        //                    Id, Price, Title, Description, Quantity, CustomerId, ProductTypeId
-        //                FROM Products
-        //                WHERE Id = @id";
-        //            cmd.Parameters.Add(new SqlParameter("@id", id));
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT p.Id AS ProductId, p.Price, p.Title, p.Description, p.Quantity, p.CustomerId, p.ProductTypeId, 
+                                            c.Id AS CustId, c.FirstName, c.LastName, 
+                                            pt.Id AS ProdTypeId, pt.Name AS ProductTypeName
+                                        FROM Customer c
+                                        JOIN Product p ON c.Id = p.CustomerId
+                                        JOIN ProductType pt ON pt.Id = p.CustomerId
+                                        WHERE p.Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
 
-        //            SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-        //            Product product = null;
-        //            if (reader.Read())
-        //            {
-        //                product = new Product
-        //                {
-        //                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
-        //                    Price = reader.GetInt32(reader.GetOrdinal("Price")),
-        //                    Title = reader.GetString(reader.GetOrdinal("Title")),
-        //                    Description = reader.GetString(reader.GetOrdinal("Description")),
-        //                    Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
-        //                    CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
-        //                    ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId"))
-        //                };
-        //            }
-        //            reader.Close();
-        //            return Ok(product);
-        //        }
-        //    }
-        //}
+                    Product product = null;
+                    if (reader.Read())
+                    {
+                        Customer customer = new Customer
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("CustId")),
+                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                            LastName = reader.GetString(reader.GetOrdinal("LastName"))
+                        };
+                        ProductType productType = new ProductType
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("ProdTypeId")),
+                            Name = reader.GetString(reader.GetOrdinal("ProductTypeName"))
+                        };
+                        product = new Product
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                            Price = reader.GetSqlMoney(reader.GetOrdinal("Price")).ToDouble(),
+                            Title = reader.GetString(reader.GetOrdinal("Title")),
+                            Description = reader.GetString(reader.GetOrdinal("Description")),
+                            Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                            CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                            ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                            Customer = customer,
+                            ProductType = productType
+                        };
+                    }
+                    reader.Close();
+                    return Ok(product);
+                }
+            }
+        }
 
         //// POST api/values
         //[HttpPost]
