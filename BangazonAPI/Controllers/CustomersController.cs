@@ -39,7 +39,8 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName FROM Customer c";
+                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.Lastname
+                    FROM Customer c";
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<Customer> customers = new List<Customer>();
@@ -168,38 +169,8 @@ namespace BangazonAPI.Controllers
 
         // DELETE api/values/5
         //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Delete([FromRoute]int id)
+        //public async Task<IActionResult> Delete(int id)
         //{
-        //    try
-        //    {
-        //        using (SqlConnection conn = Connection)
-        //        {
-        //            conn.Open();
-        //            using (SqlCommand cmd = conn.CreateCommand())
-        //            {
-        //                cmd.CommandText = @"DELETE FROM Customers WHERE Id = @id";
-        //                cmd.Parameters.Add(new SqlParameter("@id", id));
-
-        //                int rowsAffected = cmd.ExecuteNonQuery();
-        //                if(rowsAffected > 0)
-        //                    {
-        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
-        //                }
-        //                throw new Exception("No rows affected");
-        //            }
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        if(!CustomerExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
         //}
 
         private bool CustomerExists(int id)
