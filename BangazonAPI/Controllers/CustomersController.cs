@@ -39,7 +39,7 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "Write your SQL statement here to get all customers";
+                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName FROM Customer c";
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<Customer> customers = new List<Customer>();
@@ -64,7 +64,7 @@ namespace BangazonAPI.Controllers
         }
 
         // GET api/values/5
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetCustomer")]
         public async Task<IActionResult> Get(int id)
         {
             using (SqlConnection conn = Connection)
@@ -72,7 +72,7 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "Write your SQL statement here to get a single customer";
+                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName FROM Customer c WHERE Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
@@ -106,22 +106,24 @@ namespace BangazonAPI.Controllers
                 {
                     // More string interpolation
                     cmd.CommandText = @"
-                        INSERT INTO Customer ()
+                        INSERT INTO Customer (FirstName, LastName)
                         OUTPUT INSERTED.Id
-                        VALUES ()
+                        VALUES (@firstName, @lastName)
                     ";
                     cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
+                    cmd.Parameters.Add(new SqlParameter("@lastName", customer.LastName));
 
-                    customer.Id = (int) await cmd.ExecuteScalarAsync();
+                    customer.Id = (int)await cmd.ExecuteScalarAsync();
+                    
 
                     return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
                 }
             }
         }
 
-        // PUT api/values/5
+        //PUT api/values/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Customer customer)
+        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] Customer customer)
         {
             try
             {
@@ -133,11 +135,12 @@ namespace BangazonAPI.Controllers
                         cmd.CommandText = @"
                             UPDATE Customer
                             SET FirstName = @firstName
-                            -- Set the remaining columns here
+                            LastName = @lastName
                             WHERE Id = @id
                         ";
                         cmd.Parameters.Add(new SqlParameter("@id", customer.Id));
                         cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@lastName", customer.LastName));
 
                         int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
@@ -164,10 +167,40 @@ namespace BangazonAPI.Controllers
         }
 
         // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-        }
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Delete([FromRoute]int id)
+        //{
+        //    try
+        //    {
+        //        using (SqlConnection conn = Connection)
+        //        {
+        //            conn.Open();
+        //            using (SqlCommand cmd = conn.CreateCommand())
+        //            {
+        //                cmd.CommandText = @"DELETE FROM Customers WHERE Id = @id";
+        //                cmd.Parameters.Add(new SqlParameter("@id", id));
+
+        //                int rowsAffected = cmd.ExecuteNonQuery();
+        //                if(rowsAffected > 0)
+        //                    {
+        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
+        //                }
+        //                throw new Exception("No rows affected");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        if(!CustomerExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+        //}
 
         private bool CustomerExists(int id)
         {
