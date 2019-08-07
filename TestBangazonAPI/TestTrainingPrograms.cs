@@ -29,7 +29,7 @@ namespace TestBangazonAPI
 
 
                 string responseBody = await response.Content.ReadAsStringAsync();
-                var trainingPrograms = JsonConvert.DeserializeObject<List<Product>>(responseBody);
+                var trainingPrograms = JsonConvert.DeserializeObject<List<TrainingProgram>>(responseBody);
 
                 /*
                     ASSERT
