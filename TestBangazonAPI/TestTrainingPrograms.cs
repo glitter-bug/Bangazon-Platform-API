@@ -68,54 +68,54 @@ namespace TestBangazonAPI
                 //Assert.NotNull(trainingProgram);
             }
         }
-        [Fact]
-        public async Task Test_Create_And_Delete_TrainingProgram()
-        {
-            using (var client = new APIClientProvider().Client)
-            {
-                /*
-                    ARRANGE
-                */
-                TrainingProgram GameHenU = new TrainingProgram
-                {
-                    Name = "Cornish Game Hen University for Champions",
-                    StartDate = DateTime.Now,
-                    EndDate = DateTime.Now.AddDays(30),
-                    MaxAttendees = 5
-                };
-                var GameHenUAsJSON = JsonConvert.SerializeObject(GameHenU);
-                /*
-                    ACT
-                */
-                var response = await client.PostAsync("/api/TrainingPrograms",
-                     new StringContent(GameHenUAsJSON, Encoding.UTF8, "application/json"));
+        //[Fact]
+        //public async Task Test_Create_And_Delete_TrainingProgram()
+        //{
+        //    using (var client = new APIClientProvider().Client)
+        //    {
+        //        /*
+        //            ARRANGE
+        //        */
+        //        TrainingProgram GameHenU = new TrainingProgram
+        //        {
+        //            Name = "Cornish Game Hen University for Champions",
+        //            StartDate = DateTime.Now,
+        //            EndDate = DateTime.Now.AddDays(30),
+        //            MaxAttendees = 5
+        //        };
+        //        var GameHenUAsJSON = JsonConvert.SerializeObject(GameHenU);
+        //        /*
+        //            ACT
+        //        */
+        //        var response = await client.PostAsync("/api/TrainingPrograms",
+        //             new StringContent(GameHenUAsJSON, Encoding.UTF8, "application/json"));
 
 
-                string responseBody = await response.Content.ReadAsStringAsync();
-                var newTP = JsonConvert.DeserializeObject<TrainingProgram>(responseBody);
-                /*
-                    ASSERT
-                */
-                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-                //Assert.Equal(BBJam.Price, newProduct.Price);
-                //Assert.Equal(BBJam.Title, newProduct.Title);
-                //Assert.Equal(BBJam.Description, newProduct.Description);
-                //Assert.Equal(BBJam.Quantity, newProduct.Quantity);
-                //Assert.Equal(BBJam.CustomerId, newProduct.CustomerId);
-                //Assert.Equal(BBJam.ProductTypeId, newProduct.ProductTypeId);
-                //Assert.NotNull(newProduct); deletetrainingprogramfuturestardate
+        //        string responseBody = await response.Content.ReadAsStringAsync();
+        //        var newTP = JsonConvert.DeserializeObject<TrainingProgram>(responseBody);
+        //        /*
+        //            ASSERT
+        //        */
+        //        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        //        //Assert.Equal(BBJam.Price, newProduct.Price);
+        //        //Assert.Equal(BBJam.Title, newProduct.Title);
+        //        //Assert.Equal(BBJam.Description, newProduct.Description);
+        //        //Assert.Equal(BBJam.Quantity, newProduct.Quantity);
+        //        //Assert.Equal(BBJam.CustomerId, newProduct.CustomerId);
+        //        //Assert.Equal(BBJam.ProductTypeId, newProduct.ProductTypeId);
+        //        //Assert.NotNull(newProduct); deletetrainingprogramfuturestardate
 
-                /*
-                    ACT
-                */
-                var deleteResponse = await client.DeleteAsync($"/api/TrainingPrograms/{newTP.Id}");
+        //        /*
+        //            ACT
+        //        */
+        //        var deleteResponse = await client.DeleteAsync($"/api/TrainingPrograms/{newTP.Id}");
 
-                /*
-                    ASSERT
-                */
-                Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
-            }
-        }
+        //        /*
+        //            ASSERT
+        //        */
+        //        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+        //    }
+        //}
 
         [Fact]
         public async Task Test_Put_TrainingProgram()
@@ -164,7 +164,139 @@ namespace TestBangazonAPI
                 Assert.Equal(newName, NewFeatherFactory.Name);
             }
         }
+        [Fact]
+        public async Task Test_Post_TrainingProgram()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                TrainingProgram trainingProgram = new TrainingProgram()
+                {
+                    Name = "Christmas Scented Basket Weaving Class ",
+                    StartDate = new DateTime(2045, 12, 25),
+                    EndDate = new DateTime(2046, 05, 11),
+                    MaxAttendees = 300
+                };
+
+                var trainingProgramAsJSON = JsonConvert.SerializeObject(trainingProgram);
+
+                /*
+                    ACT
+                */
+                var response = await client.PostAsync(
+                    "/api/TrainingPrograms",
+                    new StringContent(trainingProgramAsJSON, Encoding.UTF8, "application/json")
+                    );
+
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var newTP = JsonConvert.DeserializeObject<TrainingProgram>(responseBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+                Assert.True(newTP.Id != 0);
+                Assert.Equal(newTP.Name, trainingProgram.Name);
+                Assert.Equal(newTP.MaxAttendees, trainingProgram.MaxAttendees);
+            }
+        }
+        [Fact]
+        public async Task Test_Delete_TrainingPrograms_InTheFuture()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                TrainingProgram trainingProgram = new TrainingProgram()
+                {
+                    Name = "Super Deluxe Leadership Retreat For Men",
+                    StartDate = new DateTime(2055, 04, 21),
+                    EndDate = new DateTime(2055, 06, 22),
+                    MaxAttendees = 8
+                };
+
+                var trainingProgramAsJSON = JsonConvert.SerializeObject(trainingProgram);
+
+
+                var response = await client.PostAsync(
+                    "/api/TrainingPrograms",
+                    new StringContent(trainingProgramAsJSON, Encoding.UTF8, "application/json")
+                    );
+
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var newTP = JsonConvert.DeserializeObject<TrainingProgram>(responseBody);
+
+
+                /*
+                    ACT
+                */
+                var deleteResponse = await client.DeleteAsync($"/api/TrainingPrograms/{newTP.Id}");
+
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+                // If the future training program is deleted it wont exist, therefore, the user will be given a NoContent status code.
+            }
+        }
+
+        [Fact]
+        public async Task Test_Delete_TrainingPrograms_ThatDontExist()
+        {
+
+
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+
+                /*
+                    ACT
+                */
+                var deleteResponse = await client.DeleteAsync($"/api/traingingPrograms/99999999");
+
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
+                // This tests when a user tries to delete a Training Program that doesnt exist in the first place. They are given  NotFound status code.
+            }
+        }
+
+        [Fact]
+        public async Task Test_Delete_NotFuture_TrainingPrograms()
+        {
+
+
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+
+                /*
+                    ACT
+                */
+                var deleteResponse = await client.DeleteAsync($"/api/TrainingPrograms/2");
+
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.Forbidden, deleteResponse.StatusCode);
+                // user may only delete training programs that have a start date in the future. If the program is already in progress, the user is given a forbidden status code.
+            }
+        }
+
+
     }
 }
-
 

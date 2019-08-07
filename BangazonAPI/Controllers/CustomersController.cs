@@ -96,13 +96,13 @@ namespace BangazonAPI.Controllers
             {
                 SqlCommandText = @"SELECT c.Id AS CustomerId, c.FirstName, c.LastName, 
                 p.Id AS ProductId, p.Title, p.Price, p.Description, p.Quantity, p.ProductTypeId 
-                FROM Customer c JOIN Product p ON c.Id = p.CustomerId";
+                FROM Customer c LEFT JOIN Product p ON c.Id = p.CustomerId";
             }
             else if(_include == "payments")
             {
                 SqlCommandText = @"SELECT c.Id AS CustomerId, c.FirstName, c.LastName, 
                 pt.Id AS PaymentTypeId, pt.AcctNumber, pt.Name, pt.CustomerId 
-                FROM Customer c JOIN PaymentType pt ON c.Id = pt.CustomerId";
+                FROM Customer c LEFT JOIN PaymentType pt ON c.Id = pt.CustomerId";
             }
             else
             {

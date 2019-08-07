@@ -173,7 +173,7 @@ namespace BangazonAPI.Controllers
 
         // DELETE: api/TrainingPrograms/2
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute]int id)
         {
             try
             {
@@ -182,19 +182,52 @@ namespace BangazonAPI.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        var trainingProgram = GetTrainingProgramById(id);
-                        DateTime todaysDate = DateTime.Now;
-                        if (todaysDate > trainingProgram.StartDate)
+                        cmd.CommandText = @"SELECT Id, [Name], StartDate, EndDate, MaxAttendees 
+                                        FROM TrainingProgram 
+                                        WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                        TrainingProgram trainingProgram = null;
+                        if (reader.Read())
                         {
-                            cmd.CommandText = @"DELETE FROM TrainingProgram WHERE Id = @id";
-                            cmd.Parameters.Add(new SqlParameter("@id", id));
+                            trainingProgram = new TrainingProgram
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+                                EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
+                                MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"))
+                                // You might have more columns
+                            };
                         }
-                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
-                        if (rowsAffected > 0)
+                        reader.Close();
+                        if (trainingProgram.StartDate > DateTime.Now)
                         {
-                            return new StatusCodeResult(StatusCodes.Status204NoContent);
+                            using (SqlConnection conn1 = Connection)
+                            {
+                                conn1.Open();
+                                using (SqlCommand cmd1 = conn1.CreateCommand())
+                                {
+                                    cmd1.CommandText = @"DELETE FROM EmployeeTraining 
+                                                         WHERE TrainingProgramId = @id
+                                                         DELETE FROM TrainingProgram
+                                                         WHERE Id = @id
+                                                          ";
+                                    cmd1.Parameters.Add(new SqlParameter("@id", id));
+
+                                    int rowsAffected = cmd1.ExecuteNonQuery();
+                                    if (rowsAffected > 0)
+                                    {
+                                        return new StatusCodeResult(StatusCodes.Status204NoContent);
+                                    }
+                                    throw new Exception("No rows affected");
+                                }
+                            }
                         }
-                        throw new Exception("No rows affected");
+                        else
+                        {
+                            return StatusCode(403);
+                        }
                     }
                 }
             }
@@ -210,7 +243,6 @@ namespace BangazonAPI.Controllers
                 }
             }
         }
-
         private bool TrainingProgramExists(int id)
         {
             using (SqlConnection conn = Connection)
@@ -221,43 +253,9 @@ namespace BangazonAPI.Controllers
                     // More string interpolation
                     cmd.CommandText = "SELECT Id FROM TrainingProgram WHERE Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
-
                     SqlDataReader reader = cmd.ExecuteReader();
-
                     return reader.Read();
                 }
-            }
-        }
-
-        private TrainingProgram GetTrainingProgramById(int id)
-        {
-            using (SqlConnection conn = Connection)
-            {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
-                {
-                    // More string interpolation
-                    cmd.CommandText = "SELECT Id FROM TrainingProgram WHERE Id = @id";
-                    cmd.Parameters.Add(new SqlParameter("@id", id));
-
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    TrainingProgram trainingProgram = null;
-                    if (reader.Read())
-                    {
-                        trainingProgram = new TrainingProgram
-                        {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                            StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
-                            EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
-                            MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"))
-                        };
-
-                    }
-                    reader.Close();
-                    return trainingProgram;
-                }
-
             }
         }
     }
