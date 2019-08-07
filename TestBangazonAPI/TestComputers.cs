@@ -66,7 +66,7 @@ namespace TestBangazonAPI
             }
         }
         [Fact]
-        public async Task Test_Create_And_Delete_TrainingProgram()
+        public async Task Test_Create_And_Delete_Computer()
         {
             using (var client = new APIClientProvider().Client)
             {
@@ -84,7 +84,7 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var response = await client.PostAsync("/api/TrainingPrograms",
+                var response = await client.PostAsync("/api/Computers",
                      new StringContent(CompBoxNowAsJSON, Encoding.UTF8, "application/json"));
 
 
@@ -108,53 +108,53 @@ namespace TestBangazonAPI
             }
         }
 
-        //[Fact]
-        //public async Task Test_Put_TrainingProgram()
-        //{
-        //    string newName = "Feather Factory Learning Center For Soft People";
+        [Fact]
+        public async Task Test_Put_Computers()
+        {
+            string newMake = "XSG-540";
 
 
 
-        //    using (var client = new APIClientProvider().Client)
-        //    {
-        //        /*
-        //            ARRANGE
-        //        */
-        //        TrainingProgram ModifiedFeatherFactory = new TrainingProgram
-        //        {
-        //            Name = newName,
-        //            StartDate = DateTime.Now,
-        //            EndDate = DateTime.Now.AddDays(30),
-        //            MaxAttendees = 5
-        //        };
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                Computer ModifiedXSG540 = new Computer
+                {
+                    //Make = newMake,
+                    //PurchaseDate = DateTime.Now,
+                    //DecomissonDate = DateTime.Now.AddYears(8),
+                    //Manufacturer = 
+                };
 
-        //        var ModifiedFeatherFactoryAsJSON = JsonConvert.SerializeObject(ModifiedFeatherFactory);
-
-
-        //        /*
-        //            ACT
-        //        */
-        //        var response = await client.PutAsync("/api/TrainingPrograms/2",
-        //             new StringContent(ModifiedFeatherFactoryAsJSON, Encoding.UTF8, "application/json"));
+                var ModifiedXSG540AsJSON = JsonConvert.SerializeObject(ModifiedXSG540);
 
 
-        //        string responseBody = await response.Content.ReadAsStringAsync();
+                /*
+                    ACT
+                */
+                var response = await client.PutAsync("/api/Computers/2",
+                     new StringContent(ModifiedXSG540AsJSON, Encoding.UTF8, "application/json"));
 
-        //        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        //        var GetFeatherFactory = await client.GetAsync("/api/TrainingPrograms/2");
-        //        GetFeatherFactory.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
 
-        //        string GetFeatherFactoryBody = await GetFeatherFactory.Content.ReadAsStringAsync();
-        //        TrainingProgram NewFeatherFactory = JsonConvert.DeserializeObject<TrainingProgram>(GetFeatherFactoryBody);
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        //        /*
-        //            ASSERT
-        //        */
-        //        Assert.Equal(HttpStatusCode.OK, GetFeatherFactory.StatusCode);
-        //        Assert.Equal(newName, NewFeatherFactory.Name);
-        //    }
-        //}
+                var GetXSG = await client.GetAsync("/api/Computers/2");
+                GetXSG.EnsureSuccessStatusCode();
+
+                string GetXSGBody = await GetXSG.Content.ReadAsStringAsync();
+                Computer NewXSG540 = JsonConvert.DeserializeObject<Computer>(GetXSGBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.OK, GetXSG.StatusCode);
+                Assert.Equal(newMake, NewXSG540.Make);
+            }
+        }
     }
 }
 
