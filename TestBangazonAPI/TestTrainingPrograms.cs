@@ -103,7 +103,7 @@ namespace TestBangazonAPI
                 //Assert.Equal(BBJam.Quantity, newProduct.Quantity);
                 //Assert.Equal(BBJam.CustomerId, newProduct.CustomerId);
                 //Assert.Equal(BBJam.ProductTypeId, newProduct.ProductTypeId);
-                //Assert.NotNull(newProduct);
+                //Assert.NotNull(newProduct); deletetrainingprogramfuturestardate
 
                 /*
                     ACT
