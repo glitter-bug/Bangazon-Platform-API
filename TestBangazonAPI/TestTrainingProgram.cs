@@ -87,7 +87,7 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var response = await client.PostAsync("/api/TrainingProgram",
+                var response = await client.PostAsync("/api/TrainingPrograms",
                      new StringContent(GameHenUAsJSON, Encoding.UTF8, "application/json"));
 
 

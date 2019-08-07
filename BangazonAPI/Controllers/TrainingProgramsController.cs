@@ -81,7 +81,7 @@ namespace BangazonAPI.Controllers
                     TrainingProgram trainingProgram = null;
                     if (reader.Read())
                     {
-                         trainingProgram = new TrainingProgram
+                        trainingProgram = new TrainingProgram
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             Name = reader.GetString(reader.GetOrdinal("Name")),
@@ -98,22 +98,135 @@ namespace BangazonAPI.Controllers
         }
 
 
-        // POST: api/TrainingPrograms
+        // POST api/TrainingPrograms
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Post([FromBody] TrainingProgram trainingProgram)
         {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                                       INSERT INTO TrainingProgram (Name, StartDate, EndDate, MaxAttendees)
+                                       OUTPUT INSERTED.Id
+                                       VALUES (@name, @startDate, @endDate, @maxAttendees)";
+                    cmd.Parameters.Add(new SqlParameter("@name", trainingProgram.Name));
+                    cmd.Parameters.Add(new SqlParameter("@startDate", trainingProgram.StartDate));
+                    cmd.Parameters.Add(new SqlParameter("@endDate", trainingProgram.EndDate));
+                    cmd.Parameters.Add(new SqlParameter("@maxAttendees", trainingProgram.MaxAttendees));
+
+                    trainingProgram.Id = (int)await cmd.ExecuteScalarAsync();
+
+                    return CreatedAtRoute("GetProduct", new { id = trainingProgram.Id }, trainingProgram);
+                }
+            }
         }
 
-        // PUT: api/TrainingPrograms/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
+        // PUT api/TrainingPrograms/3
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> Put([FromRoute]int id, [FromBody] Product product)
+        //{
+        //    try
+        //    {
+        //        using (SqlConnection conn = Connection)
+        //        {
+        //            conn.Open();
+        //            using (SqlCommand cmd = conn.CreateCommand())
+        //            {
+        //                cmd.CommandText = @"
+        //                    UPDATE Product
+        //                    SET Title = @title,
+        //                        Price = @price,
+        //                        Description = @description,
+        //                        Quantity = @quantity,
+        //                        ProductTypeId = @productTypeId,
+        //                        CustomerId = @customerId
+        //                    WHERE Id = @id";
+        //                cmd.Parameters.Add(new SqlParameter("@id", id));
+        //                cmd.Parameters.Add(new SqlParameter("@title", product.Title));
+        //                cmd.Parameters.Add(new SqlParameter("@price", product.Price));
+        //                cmd.Parameters.Add(new SqlParameter("@description", product.Description));
+        //                cmd.Parameters.Add(new SqlParameter("@quantity", product.Quantity));
+        //                cmd.Parameters.Add(new SqlParameter("@productTypeId", product.ProductTypeId));
+        //                cmd.Parameters.Add(new SqlParameter("@customerId", product.CustomerId));
 
-        // DELETE: api/ApiWithActions/5
+        //                int rowsAffected = await cmd.ExecuteNonQueryAsync();
+
+        //                if (rowsAffected > 0)
+        //                {
+        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
+        //                }
+
+        //                throw new Exception("No rows affected");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        if (!ProductExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+        //}
+
+        // DELETE: api/TrainingPrograms/2
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"DELETE FROM TrainingProgram WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        if (rowsAffected > 0)
+                        {
+                            return new StatusCodeResult(StatusCodes.Status204NoContent);
+                        }
+                        throw new Exception("No rows affected");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                if (!TrainingProgramExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        private bool TrainingProgramExists(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    // More string interpolation
+                    cmd.CommandText = "SELECT Id FROM TrainingProgram WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    return reader.Read();
+                }
+            }
         }
     }
 }
