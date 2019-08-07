@@ -70,89 +70,92 @@ namespace TestBangazonAPI
             }
         }
 
-        //[Fact]
-        //public async Task Test_Post_And_Delete_ProductTypes()
-        //{
-        //    using (var client = new APIClientProvider().Client)
-        //    {
-        //        /*
-        //            ARRANGE
-        //        */
-        //        ProductType Clothes = new ProductType
-        //        {
-        //            Name = "Clothes"
-        //        };
+        [Fact]
+        public async Task Test_Post_Employees()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                Employee Deep = new Employee
+                {
+                    FirstName = "Deep",
+                    LastName = "Patel",
+                    DepartmentId = 1,
+                    IsSuperVisor = true
+                };
 
-        //        var ClothesAsJSON = JsonConvert.SerializeObject(Clothes);
-
-
-        //        /*
-        //            ACT
-        //        */
-        //        var response = await client.PostAsync("/api/ProductTypes",
-        //             new StringContent(ClothesAsJSON, Encoding.UTF8, "application/json"));
+                var DeepAsJSON = JsonConvert.SerializeObject(Deep);
+             
 
 
-        //        string responseBody = await response.Content.ReadAsStringAsync();
-        //        var productTypes = JsonConvert.DeserializeObject<ProductType>(responseBody);
-
-        //        /*
-        //            ASSERT
-        //        */
-        //        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        //        Assert.Equal("Clothes", productTypes.Name);
-        //        Assert.NotNull(productTypes);
-
-        //        var deleteResponse = await client.DeleteAsync($"/api/ProductTypes/{productTypes.Id}");
-
-        //        /*
-        //            ASSERT
-        //        */
-        //        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
-        //    }
-        //}
-
-        //[Fact]
-        //public async Task Test_Put_ProductTypes()
-        //{
-        //    string NewName = "Toys";
-
-        //    using (var client = new APIClientProvider().Client)
-        //    {
-        //        /*
-        //            ARRANGE
-        //        */
-        //        ProductType ModifiedClothes = new ProductType
-        //        {
-        //            Name = NewName,
-        //        };
-
-        //        var ModifiedClothesAsJSON = JsonConvert.SerializeObject(ModifiedClothes);
+                /*
+                    ACT
+                */
+                var response = await client.PostAsync("/api/Employees",
+                     new StringContent(DeepAsJSON, Encoding.UTF8, "application/json"));
 
 
-        //        /*
-        //            ACT
-        //        */
-        //        var response = await client.PutAsync("/api/ProductTypes/3",
-        //             new StringContent(ModifiedClothesAsJSON, Encoding.UTF8, "application/json"));
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var employees = JsonConvert.DeserializeObject<Employee>(responseBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+                Assert.Equal("Deep", employees.FirstName);
+                Assert.NotNull(employees);
+
+      
+            }
+        }
+
+        [Fact]
+        public async Task Test_Put_Employees()
+        {
+            string NewFirstName = "Khusboo";
 
 
-        //        string responseBody = await response.Content.ReadAsStringAsync();
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                Employee ModifiedKhusboo = new Employee
+                {
+                    FirstName = NewFirstName,
+                    LastName = "Patel",
+                    DepartmentId = 1,
+                    IsSuperVisor = true
+                };
 
-        //        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                var ModifiedKhusbooAsJSON = JsonConvert.SerializeObject(ModifiedKhusboo);
 
-        //        var GetClothes = await client.GetAsync("/api/ProductTypes/3");
-        //        GetClothes.EnsureSuccessStatusCode();
 
-        //        string GetClothesBody = await GetClothes.Content.ReadAsStringAsync();
-        //        ProductType NewClothes = JsonConvert.DeserializeObject<ProductType>(GetClothesBody);
-        //        /*
-        //            ASSERT
-        //        */
-        //        Assert.Equal(HttpStatusCode.OK, GetClothes.StatusCode);
-        //        Assert.Equal(NewName, NewClothes.Name);
-        //    }
-        //}
+                /*
+                    ACT
+                */
+                var response = await client.PutAsync("/api/Employees/6",
+                     new StringContent(ModifiedKhusbooAsJSON, Encoding.UTF8, "application/json"));
+
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+                var GetKhusboo = await client.GetAsync("/api/Employees/6");
+                GetKhusboo.EnsureSuccessStatusCode();
+
+                string GetKhusbooBody = await GetKhusboo.Content.ReadAsStringAsync();
+                Employee NewKhusboo = JsonConvert.DeserializeObject<Employee>(GetKhusbooBody);
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.OK, GetKhusboo.StatusCode);
+                Assert.Equal(NewFirstName, NewKhusboo.FirstName);
+            }
+        }
 
 
     }

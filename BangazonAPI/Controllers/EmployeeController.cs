@@ -100,124 +100,96 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        //// POST
-        //[HttpPost]
-        //public async Task<IActionResult> Post([FromBody] ProductType productType)
-        //{
-        //    using (SqlConnection conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (SqlCommand cmd = conn.CreateCommand())
-        //        {
-        //            // More string interpolation
-        //            cmd.CommandText = @"
-        //                INSERT INTO ProductType (Name)
-        //                OUTPUT INSERTED.Id
-        //                VALUES (@name)
-        //            ";
-        //            cmd.Parameters.Add(new SqlParameter("@Name", productType.Name));
+        // POST
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Employee employee)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    // More string interpolation
+                    cmd.CommandText = @"
+                        INSERT INTO Employee (FirstName, LastName, DepartmentId, IsSuperVisor)
+                        OUTPUT INSERTED.Id
+                        VALUES (@firstName, @lastName, @departmentId, @isSuperVisor)";
+                    cmd.Parameters.Add(new SqlParameter("@FirstName", employee.FirstName));
+                    cmd.Parameters.Add(new SqlParameter("@LastName", employee.LastName));
+                    cmd.Parameters.Add(new SqlParameter("@DepartmentId", employee.DepartmentId));
+                    cmd.Parameters.Add(new SqlParameter("@IsSuperVisor", employee.IsSuperVisor));
 
-        //            productType.Id = (int)await cmd.ExecuteScalarAsync();
+                    employee.Id = (int)await cmd.ExecuteScalarAsync();
 
-        //            return CreatedAtRoute("GetProductType", new { id = productType.Id }, productType);
-        //        }
-        //    }
-        //}
+                    return CreatedAtRoute("GetEmployee", new { id = employee.Id }, employee);
+                }
+            }
+        }
 
-        //// PUT
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> Put([FromRoute] int id, [FromBody] ProductType productType)
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection conn = Connection)
-        //        {
-        //            conn.Open();
-        //            using (SqlCommand cmd = conn.CreateCommand())
-        //            {
-        //                cmd.CommandText = @"
-        //                    UPDATE ProductType
-        //                    SET Name = @Name
-        //                    WHERE Id = @id";
-        //                cmd.Parameters.Add(new SqlParameter("@id", id));
-        //                cmd.Parameters.Add(new SqlParameter("@Name", productType.Name));
+        // PUT
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] Employee employee)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            UPDATE Employee
+                            SET FirstName = @firstName,
+                                LastName = @lastName,
+                                DepartmentId = @departmentId,
+                                IsSuperVisor = @isSuperVisor
+                            WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+                        cmd.Parameters.Add(new SqlParameter("@FirstName", employee.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@LastName", employee.LastName));
+                        cmd.Parameters.Add(new SqlParameter("@DepartmentId", employee.DepartmentId));
+                        cmd.Parameters.Add(new SqlParameter("@IsSuperVisor", employee.IsSuperVisor));
 
-        //                int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
-        //                if (rowsAffected > 0)
-        //                {
-        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
-        //                }
+                        if (rowsAffected > 0)
+                        {
+                            return new StatusCodeResult(StatusCodes.Status204NoContent);
+                        }
 
-        //                throw new Exception("No rows affected");
-        //            }
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        if (!ProductTypeExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-        //}
+                        throw new Exception("No rows affected");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                if (!EmployeeExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
 
-        //// DELETE
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Delete([FromRoute] int id)
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection conn = Connection)
-        //        {
-        //            conn.Open();
-        //            using (SqlCommand cmd = conn.CreateCommand())
-        //            {
-        //                cmd.CommandText = @"DELETE FROM ProductType WHERE Id = @id";
-        //                cmd.Parameters.Add(new SqlParameter("@id", id));
+        private bool EmployeeExists(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    // More string interpolation
+                    cmd.CommandText = "SELECT Id FROM Employee WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
 
-        //                int rowsAffected = cmd.ExecuteNonQuery();
-        //                if (rowsAffected > 0)
-        //                {
-        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
-        //                }
-        //                throw new Exception("No rows affected");
-        //            }
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        if (!ProductTypeExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-        //}
+                    SqlDataReader reader = cmd.ExecuteReader();
 
-        //private bool ProductTypeExists(int id)
-        //{
-        //    using (SqlConnection conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (SqlCommand cmd = conn.CreateCommand())
-        //        {
-        //            // More string interpolation
-        //            cmd.CommandText = "SELECT Id FROM ProductType WHERE Id = @id";
-        //            cmd.Parameters.Add(new SqlParameter("@id", id));
-
-        //            SqlDataReader reader = cmd.ExecuteReader();
-
-        //            return reader.Read();
-        //        }
-        //    }
-        //}
+                    return reader.Read();
+                }
+            }
+        }
     }
 }
