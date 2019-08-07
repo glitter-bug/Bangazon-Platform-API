@@ -34,6 +34,8 @@ namespace BangazonAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+
+
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
@@ -96,8 +98,6 @@ namespace BangazonAPI.Controllers
                 }
             }
         }
-
-
         // POST api/TrainingPrograms
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] TrainingProgram trainingProgram)
@@ -182,9 +182,13 @@ namespace BangazonAPI.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        cmd.CommandText = @"DELETE FROM TrainingProgram WHERE Id = @id";
-                        cmd.Parameters.Add(new SqlParameter("@id", id));
-
+                        var trainingProgram = GetTrainingProgramById(id);
+                        DateTime todaysDate = DateTime.Now;
+                        if (todaysDate > trainingProgram.StartDate)
+                        {
+                            cmd.CommandText = @"DELETE FROM TrainingProgram WHERE Id = @id";
+                            cmd.Parameters.Add(new SqlParameter("@id", id));
+                        }
                         int rowsAffected = await cmd.ExecuteNonQueryAsync();
                         if (rowsAffected > 0)
                         {
@@ -222,6 +226,38 @@ namespace BangazonAPI.Controllers
 
                     return reader.Read();
                 }
+            }
+        }
+
+        private TrainingProgram GetTrainingProgramById(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    // More string interpolation
+                    cmd.CommandText = "SELECT Id FROM TrainingProgram WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    TrainingProgram trainingProgram = null;
+                    if (reader.Read())
+                    {
+                        trainingProgram = new TrainingProgram
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
+                            StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+                            EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
+                            MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"))
+                        };
+
+                    }
+                    reader.Close();
+                    return trainingProgram;
+                }
+
             }
         }
     }
