@@ -153,7 +153,7 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var response = await client.PutAsync("/api/Products/4",
+                var response = await client.PutAsync("/api/Products/3",
                      new StringContent(ModifiedRaspJamAsJSON, Encoding.UTF8, "application/json"));
 
 
@@ -161,7 +161,7 @@ namespace TestBangazonAPI
 
                 Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-                var GetRaspJam = await client.GetAsync("/api/Products/4");
+                var GetRaspJam = await client.GetAsync("/api/Products/3");
                 GetRaspJam.EnsureSuccessStatusCode();
 
                 string GetRaspJamBody = await GetRaspJam.Content.ReadAsStringAsync();
