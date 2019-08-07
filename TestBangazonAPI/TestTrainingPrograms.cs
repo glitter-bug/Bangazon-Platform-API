@@ -10,7 +10,7 @@ using System.Text;
 
 namespace TestBangazonAPI
 {
-    public class TestTrainingProgram
+    public class TestTrainingPrograms
     {
         [Fact]
         public async Task Test_Get_All_Training_Programs()
