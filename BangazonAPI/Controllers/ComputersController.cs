@@ -54,7 +54,7 @@ namespace BangazonAPI.Controllers
                         };
                         if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
                         {
-                            computer.DecomissonDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                            computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
                         }
                         computers.Add(computer);
                     }
@@ -65,166 +65,169 @@ namespace BangazonAPI.Controllers
         }
 
         //// GET: api/Computers/1
-        //[HttpGet("{id}", Name = "GetComputer")]
-        //public async Task<IActionResult> Get(int id)
-        //{
-        //    using (SqlConnection conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (SqlCommand cmd = conn.CreateCommand())
-        //        {
-        //            cmd.CommandText = @"SELECT cmp.Id, cmp.PurchaseDate, cmp.DecomissionDate, cmp.Make, cmp.Manufacturer 
-        //                                FROM Computer cmp
-        //                                WHERE cmp.Id = @id";
-        //            cmd.Parameters.Add(new SqlParameter("@id", id));
+        [HttpGet("{id}", Name = "GetComputer")]
+        public async Task<IActionResult> Get(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT cmp.Id, cmp.PurchaseDate, cmp.DecomissionDate, cmp.Make, cmp.Manufacturer 
+                                        FROM Computer cmp
+                                        WHERE cmp.Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
 
-        //            SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-        //            Computer computer = null;
-        //            if (reader.Read())
-        //            {
-        //                computer = new Computer
-        //                {
-        //                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
-        //                    PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
-        //                    DecomissonDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate")),
-        //                    Make = reader.GetString(reader.GetOrdinal("Make")),
-        //                    Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer"))
-        //                };
+                    Computer computer = null;
+                    if (reader.Read())
+                    {
+                        computer = new Computer
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                            Make = reader.GetString(reader.GetOrdinal("Make")),
+                            Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer"))
+                        };
+                        if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                        {
+                            computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                        }
 
-        //            }
-        //            reader.Close();
-        //            return Ok(computer);
-        //        }
-        //    }
-        //}
+                    }
+                    reader.Close();
+                    return Ok(computer);
+                }
+            }
+        }
 
 
-        //// POST api/TrainingPrograms
-        //[HttpPost]
-        //public async Task<IActionResult> Post([FromBody] TrainingProgram trainingProgram)
-        //{
-        //    using (SqlConnection conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (SqlCommand cmd = conn.CreateCommand())
-        //        {
-        //            cmd.CommandText = @"
-        //                               INSERT INTO TrainingProgram (Name, StartDate, EndDate, MaxAttendees)
-        //                               OUTPUT INSERTED.Id
-        //                               VALUES (@name, @startDate, @endDate, @maxAttendees)";
-        //            cmd.Parameters.Add(new SqlParameter("@name", trainingProgram.Name));
-        //            cmd.Parameters.Add(new SqlParameter("@startDate", trainingProgram.StartDate));
-        //            cmd.Parameters.Add(new SqlParameter("@endDate", trainingProgram.EndDate));
-        //            cmd.Parameters.Add(new SqlParameter("@maxAttendees", trainingProgram.MaxAttendees));
+        //// POST api/Computers
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Computer computer)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                                       INSERT INTO Computer (PurchaseDate, Make, Manufacturer, DecomissionDate)
+                                       OUTPUT INSERTED.Id
+                                       VALUES (@purchaseDate, @make, @manufacturer, @decomissionDate)";
+                    cmd.Parameters.Add(new SqlParameter("@purchaseDate", computer.PurchaseDate));
+                    cmd.Parameters.Add(new SqlParameter("@make", computer.Make));
+                    cmd.Parameters.Add(new SqlParameter("@manufacturer", computer.Manufacturer));
+                    cmd.Parameters.Add(new SqlParameter("@decomissionDate", computer.DecomissionDate));
 
-        //            trainingProgram.Id = (int)await cmd.ExecuteScalarAsync();
+                    computer.Id = (int)await cmd.ExecuteScalarAsync();
 
-        //            return CreatedAtRoute("GetTrainingProgram", new { id = trainingProgram.Id }, trainingProgram);
-        //        }
-        //    }
-        //}
+                    return CreatedAtRoute("GetComputer", new { id = computer.Id }, computer);
+                }
+            }
+        }
 
-        //// PUT api/TrainingPrograms/2
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> Put([FromRoute]int id, [FromBody] TrainingProgram trainingProgram)
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection conn = Connection)
-        //        {
-        //            conn.Open();
-        //            using (SqlCommand cmd = conn.CreateCommand())
-        //            {
-        //                cmd.CommandText = @"
-        //                    UPDATE TrainingProgram
-        //                    SET Name = @name,
-        //                        StartDate = @startDate,
-        //                        EndDate = @endDate,
-        //                        MaxAttendees = @maxAttendees
-        //                    WHERE Id = @id";
-        //                cmd.Parameters.Add(new SqlParameter("@id", id));
-        //                cmd.Parameters.Add(new SqlParameter("@name", trainingProgram.Name));
-        //                cmd.Parameters.Add(new SqlParameter("@startDate", trainingProgram.StartDate));
-        //                cmd.Parameters.Add(new SqlParameter("@endDate", trainingProgram.EndDate));
-        //                cmd.Parameters.Add(new SqlParameter("@maxAttendees", trainingProgram.MaxAttendees));
+        //// PUT api/Computers/2
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put([FromRoute]int id, [FromBody] Computer computer)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            UPDATE Computer
+                            SET PurchaseDate = @purchaseDate,
+                                Make = @make,
+                                Manufacturer = @manufacturer,
+                                DecomissionDate = @decomissionDate
+                            WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+                        cmd.Parameters.Add(new SqlParameter("@purchaseDate", computer.PurchaseDate));
+                        cmd.Parameters.Add(new SqlParameter("@make", computer.Make));
+                        cmd.Parameters.Add(new SqlParameter("@manufacturer", computer.Manufacturer));
+                        cmd.Parameters.Add(new SqlParameter("@decomissionDate", computer.DecomissionDate));
 
-        //                int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
-        //                if (rowsAffected > 0)
-        //                {
-        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
-        //                }
+                        if (rowsAffected > 0)
+                        {
+                            return new StatusCodeResult(StatusCodes.Status204NoContent);
+                        }
 
-        //                throw new Exception("No rows affected");
-        //            }
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        if (!TrainingProgramExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-        //}
+                        throw new Exception("No rows affected");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                if (!ComputerExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
 
-        //// DELETE: api/TrainingPrograms/2
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Delete([FromRoute] int id)
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection conn = Connection)
-        //        {
-        //            conn.Open();
-        //            using (SqlCommand cmd = conn.CreateCommand())
-        //            {
-        //                cmd.CommandText = @"DELETE FROM TrainingProgram WHERE Id = @id";
-        //                cmd.Parameters.Add(new SqlParameter("@id", id));
+        // DELETE: api/Computers/2
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"DELETE FROM Computer WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
 
-        //                int rowsAffected = await cmd.ExecuteNonQueryAsync();
-        //                if (rowsAffected > 0)
-        //                {
-        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
-        //                }
-        //                throw new Exception("No rows affected");
-        //            }
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        if (!TrainingProgramExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-        //}
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        if (rowsAffected > 0)
+                        {
+                            return new StatusCodeResult(StatusCodes.Status204NoContent);
+                        }
+                        throw new Exception("No rows affected");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                if (!ComputerExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
 
-        //private bool TrainingProgramExists(int id)
-        //{
-        //    using (SqlConnection conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (SqlCommand cmd = conn.CreateCommand())
-        //        {
-        //            // More string interpolation
-        //            cmd.CommandText = "SELECT Id FROM TrainingProgram WHERE Id = @id";
-        //            cmd.Parameters.Add(new SqlParameter("@id", id));
+        private bool ComputerExists(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    // More string interpolation
+                    cmd.CommandText = "SELECT Id FROM Computer WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
 
-        //            SqlDataReader reader = cmd.ExecuteReader();
+                    SqlDataReader reader = cmd.ExecuteReader();
 
-        //            return reader.Read();
-        //        }
-        //    }
-        //}
+                    return reader.Read();
+                }
+            }
+        }
     }
 }
