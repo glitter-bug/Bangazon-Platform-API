@@ -68,106 +68,102 @@ namespace TestBangazonAPI
                 //Assert.NotNull(trainingProgram);
             }
         }
-        //[Fact]
-        //public async Task Test_Create_And_Delete_TrainingProgram()
-        //{
-        //    using (var client = new APIClientProvider().Client)
-        //    {
-        //        /*
-        //            ARRANGE
-        //        */
-        //        TrainingProgram BBJam = new TrainingProgram
-        //        {
-        //            //Title = "Blueberry Jam",
-        //            //Price = 3.50,
-        //            //Description = "This jam is mmmm mmm so good in your tummy",
-        //            //Quantity = 20,
-        //            //CustomerId = 4,
-        //            //ProductTypeId = 1
-
-        //        };
-        //        var BBJamAsJSON = JsonConvert.SerializeObject(BBJam);
-        //        /*
-        //            ACT
-        //        */
-        //        var response = await client.PostAsync("/api/Products",
-        //             new StringContent(BBJamAsJSON, Encoding.UTF8, "application/json"));
+        [Fact]
+        public async Task Test_Create_And_Delete_TrainingProgram()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                TrainingProgram GameHenU = new TrainingProgram
+                {
+                    Name = "Cornish Game Hen University for Champions",
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Now.AddDays(30),
+                    MaxAttendees = 5
+                };
+                var GameHenUAsJSON = JsonConvert.SerializeObject(GameHenU);
+                /*
+                    ACT
+                */
+                var response = await client.PostAsync("/api/TrainingProgram",
+                     new StringContent(GameHenUAsJSON, Encoding.UTF8, "application/json"));
 
 
-        //        string responseBody = await response.Content.ReadAsStringAsync();
-        //        var newProduct = JsonConvert.DeserializeObject<Product>(responseBody);
-        //        /*
-        //            ASSERT
-        //        */
-        //        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        //        //Assert.Equal(BBJam.Price, newProduct.Price);
-        //        //Assert.Equal(BBJam.Title, newProduct.Title);
-        //        //Assert.Equal(BBJam.Description, newProduct.Description);
-        //        //Assert.Equal(BBJam.Quantity, newProduct.Quantity);
-        //        //Assert.Equal(BBJam.CustomerId, newProduct.CustomerId);
-        //        //Assert.Equal(BBJam.ProductTypeId, newProduct.ProductTypeId);
-        //        //Assert.NotNull(newProduct);
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var newTP = JsonConvert.DeserializeObject<TrainingProgram>(responseBody);
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+                //Assert.Equal(BBJam.Price, newProduct.Price);
+                //Assert.Equal(BBJam.Title, newProduct.Title);
+                //Assert.Equal(BBJam.Description, newProduct.Description);
+                //Assert.Equal(BBJam.Quantity, newProduct.Quantity);
+                //Assert.Equal(BBJam.CustomerId, newProduct.CustomerId);
+                //Assert.Equal(BBJam.ProductTypeId, newProduct.ProductTypeId);
+                //Assert.NotNull(newProduct);
 
-        //        /*
-        //            ACT
-        //        */
-        //        var deleteResponse = await client.DeleteAsync($"/api/Products/{newProduct.Id}");
+                /*
+                    ACT
+                */
+                var deleteResponse = await client.DeleteAsync($"/api/TrainingPrograms/{newTP.Id}");
 
-        //        /*
-        //            ASSERT
-        //        */
-        //        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
-        //    }
-        //}
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+            }
+        }
 
-        //[Fact]
-        //public async Task Test_Put_TrainingProgram()
-        //{
-        //    string newTitle = "Blackberry Jam";
+        [Fact]
+        public async Task Test_Put_TrainingProgram()
+        {
+            string newName = "Feather Factory Learning Center For Soft People";
 
 
 
-        //    using (var client = new APIClientProvider().Client)
-        //    {
-        //        /*
-        //            ARRANGE
-        //        */
-        //        TrainingProgram ModifiedRaspJam = new TrainingProgram { };
-        //        //{
-        //        //    Title = newTitle,
-        //        //    Price = 3.50,
-        //        //    Description = "This jam is mmmm mmm so good in your tummy",
-        //        //    Quantity = 20,
-        //        //    CustomerId = 4,
-        //        //    ProductTypeId = 1
-        //        //};
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+                TrainingProgram ModifiedFeatherFactory = new TrainingProgram
+                {
+                    Name = newName,
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Now.AddDays(30),
+                    MaxAttendees = 5
+                };
 
-        //        var ModifiedRaspJamAsJSON = JsonConvert.SerializeObject(ModifiedRaspJam);
+                var ModifiedFeatherFactoryAsJSON = JsonConvert.SerializeObject(ModifiedFeatherFactory);
 
 
-        //        /*
-        //            ACT
-        //        */
-        //        var response = await client.PutAsync("/api/TrainingPrograms/4",
-        //             new StringContent(ModifiedRaspJamAsJSON, Encoding.UTF8, "application/json"));
+                /*
+                    ACT
+                */
+                var response = await client.PutAsync("/api/TrainingPrograms/3",
+                     new StringContent(ModifiedFeatherFactoryAsJSON, Encoding.UTF8, "application/json"));
 
 
-        //        string responseBody = await response.Content.ReadAsStringAsync();
+                string responseBody = await response.Content.ReadAsStringAsync();
 
-        //        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        //        var GetRaspJam = await client.GetAsync("/api/TrainingPrograms/4");
-        //        GetRaspJam.EnsureSuccessStatusCode();
+                var GetFeatherFactory = await client.GetAsync("/api/TrainingPrograms/4");
+                GetFeatherFactory.EnsureSuccessStatusCode();
 
-        //        string GetRaspJamBody = await GetRaspJam.Content.ReadAsStringAsync();
-        //        Product NewRaspJam = JsonConvert.DeserializeObject<Product>(GetRaspJamBody);
-        //        /*
-        //            ASSERT
-        //        */
-        //        Assert.Equal(HttpStatusCode.OK, GetRaspJam.StatusCode);
-        //        Assert.Equal(newTitle, NewRaspJam.Title);
-        //    }
-        //}
+                string GetFeatherFactoryBody = await GetFeatherFactory.Content.ReadAsStringAsync();
+                TrainingProgram NewFeatherFactory = JsonConvert.DeserializeObject<TrainingProgram>(GetFeatherFactoryBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.OK, GetFeatherFactory.StatusCode);
+                Assert.Equal(newName, NewFeatherFactory.Name);
+            }
+        }
     }
 }
 
