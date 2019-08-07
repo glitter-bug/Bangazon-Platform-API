@@ -247,7 +247,7 @@ namespace TestBangazonAPI
         }
 
         [Fact]
-        public async Task Test_Delete_TrainingPrograms_ThatDontExist()
+        public async Task Test_Delete_TrainingPrograms_ThatDontExist_Fails()
         {
 
 
@@ -272,7 +272,7 @@ namespace TestBangazonAPI
         }
 
         [Fact]
-        public async Task Test_Delete_NotFuture_TrainingPrograms()
+        public async Task Test_Delete_Existing_TrainingPrograms_Fails()
         {
 
 
