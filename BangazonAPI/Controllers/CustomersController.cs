@@ -78,7 +78,68 @@ namespace BangazonAPI.Controllers
 
             if(include == "products")
             {
-                SqlCommandText = @"SELECT c.Id AS CustomerId, c.FirstName, c.LastName, p.Id AS ProductId, p.Title, p.Price, p.Description, p.Quantity, p.ProductTypeId FROM Customer c JOIN Product p ON c.Id = p.CustomerId"
+                SqlCommandText = @"SELECT c.Id AS CustomerId, c.FirstName, c.LastName, 
+                p.Id AS ProductId, p.Title, p.Price, p.Description, p.Quantity, p.ProductTypeId 
+                FROM Customer c JOIN Product p ON c.Id = p.CustomerId";
+            }
+            else if(include == "payments")
+            {
+                SqlCommandText = @"c.Id AS CustomerId, c.FirstName, c.LastName, 
+                pt.Id AS PaymentTypeId, pt.AcctNumber, pt.Name, pt.CustomerId 
+                FROM Customer c JOIN PaymentType pt ON c.Id = pt.CustomerId";
+            }
+            else
+            {
+                SqlCommandText = @"c.Id AS CustomerId, c.FirstName, c.LastName FROM Customer";
+            }
+
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = $"{SqlCommandText} WHERE c.id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    Customer customer = null;
+
+                    while (reader.Read())
+                    {
+                        if (customer == null)
+                        {
+                            customer = new Customer
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName"))
+                            };
+                        }
+
+                        if(include == "products")
+                        {
+                            if(!reader.IsDBNull(reader.GetOrdinal("ProductId")))
+                            {
+                                customer.Products.Add(
+                                    new Product
+                                    {
+                                        Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                        ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                                        Title = reader.GetString(reader.GetOrdinal("Title")),
+                                        Price = reader.GetSqlMoney(reader.GetOrdinal("Price")).ToDouble(),
+                                        Description = reader.GetString(reader.GetOrdinal("Description")),
+                                        Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
+                                    }
+                                );
+                            }
+                        }
+                    }
+
+
+                    reader.Close();
+
+                    return Ok(customer);
+                }
             }
         }
 
