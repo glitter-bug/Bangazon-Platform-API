@@ -37,8 +37,8 @@ namespace BangazonAPI.Controllersgv
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT pt.Id, pt.AcctNumber, pt.Name, pt.CustomerId
-                    FROM PaymentType pt";
+                    cmd.CommandText = @"SELECT Id, AcctNumber, Name, CustomerId
+                    FROM PaymentType ";
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<PaymentType> paymentTypes = new List<PaymentType>();
@@ -64,28 +64,64 @@ namespace BangazonAPI.Controllersgv
         }
 
         //// GET: api/PaymentType/5
-        //[HttpGet("{id}", Name = "Get")]
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
+        [HttpGet("{id}", Name = "GetPaymentType")]
+        public async Task<IActionResult> Get([FromRoute]int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Id, AcctNumber, Name, CustomerId
+                    FROM PaymentType 
+                    WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-        //// POST: api/PaymentType
-        //[HttpPost]
-        //public void Post([FromBody] string value)
-        //{
-        //}
+                    PaymentType paymenttype = null;
 
-        //// PUT: api/PaymentType/5
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromBody] string value)
-        //{
-        //}
+                    if (reader.Read())
+                    {
+                        paymenttype = new PaymentType
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber")),
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
+                            CustomerId = reader.GetInt32(reader.GetOrdinal("CustomerId")),
+                            // You might have more columns
+                        };
 
-        //// DELETE: api/ApiWithActions/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //}
+
+
+
+                        reader.Close();
+
+                        return Ok(paymenttype);
+                    }
+                    else
+                    {
+                        return NotFound();
+                    }
+                }
+            }
+
+            //// POST: api/PaymentType
+            //[HttpPost]
+            //public void Post([FromBody] string value)
+            //{
+            //}
+
+            //// PUT: api/PaymentType/5
+            //[HttpPut("{id}")]
+            //public void Put(int id, [FromBody] string value)
+            //{
+            //}
+
+            //// DELETE: api/ApiWithActions/5
+            //[HttpDelete("{id}")]
+            //public void Delete(int id)
+            //{
+            //}
+        }
     }
 }
