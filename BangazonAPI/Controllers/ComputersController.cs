@@ -45,15 +45,17 @@ namespace BangazonAPI.Controllers
                     List<Computer> computers = new List<Computer>();
                     while (reader.Read())
                     {
-                        Computer computer = new Computer
+                        Computer computer = new Computer()
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
-                            DecomissonDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate")),
                             Make = reader.GetString(reader.GetOrdinal("Make")),
                             Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer"))
                         };
-
+                        if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                        {
+                            computer.DecomissonDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                        }
                         computers.Add(computer);
                     }
                     reader.Close();
