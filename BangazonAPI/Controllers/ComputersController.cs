@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using BangazonAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace BangazonAPI.Controllers
 {
@@ -11,36 +15,214 @@ namespace BangazonAPI.Controllers
     [ApiController]
     public class ComputersController : ControllerBase
     {
-        // GET: api/Computers
+        private readonly IConfiguration _config;
+
+        public ComputersController(IConfiguration config)
+        {
+            _config = config;
+        }
+
+        private SqlConnection Connection
+        {
+            get
+            {
+                return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            }
+        }
+        // GET api/Computers
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<IActionResult> Get()
         {
-            return new string[] { "value1", "value2" };
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+
+                    cmd.CommandText = @"SELECT cmp.Id, cmp.PurchaseDate, cmp.DecomissionDate, cmp.Make, cmp.Manufacturer 
+                                        FROM Computer cmp";
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                    List<Computer> computers = new List<Computer>();
+                    while (reader.Read())
+                    {
+                        Computer computer = new Computer
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                            DecomissonDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate")),
+                            Make = reader.GetString(reader.GetOrdinal("Make")),
+                            Manufacturer = reader.GetString(reader.GetOrdinal("Manufacturer"))
+                        };
+
+                        computers.Add(computer);
+                    }
+                    reader.Close();
+                    return Ok(computers);
+                }
+            }
         }
 
-        // GET: api/Computers/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+        //// GET: api/TrainingPrograms/5
+        //[HttpGet("{id}", Name = "GetTrainingProgram")]
+        //public async Task<IActionResult> Get(int id)
+        //{
+        //    using (SqlConnection conn = Connection)
+        //    {
+        //        conn.Open();
+        //        using (SqlCommand cmd = conn.CreateCommand())
+        //        {
+        //            cmd.CommandText = @"SELECT tp.Id, tp.Name, tp.StartDate, tp.EndDate, tp.MaxAttendees
+        //                                FROM TrainingProgram tp
+        //                                WHERE tp.Id = @id";
+        //            cmd.Parameters.Add(new SqlParameter("@id", id));
 
-        // POST: api/Computers
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
+        //            SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-        // PUT: api/Computers/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
+        //            TrainingProgram trainingProgram = null;
+        //            if (reader.Read())
+        //            {
+        //                trainingProgram = new TrainingProgram
+        //                {
+        //                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+        //                    Name = reader.GetString(reader.GetOrdinal("Name")),
+        //                    StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+        //                    EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
+        //                    MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"))
+        //                };
 
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+        //            }
+        //            reader.Close();
+        //            return Ok(trainingProgram);
+        //        }
+        //    }
+        //}
+
+
+        //// POST api/TrainingPrograms
+        //[HttpPost]
+        //public async Task<IActionResult> Post([FromBody] TrainingProgram trainingProgram)
+        //{
+        //    using (SqlConnection conn = Connection)
+        //    {
+        //        conn.Open();
+        //        using (SqlCommand cmd = conn.CreateCommand())
+        //        {
+        //            cmd.CommandText = @"
+        //                               INSERT INTO TrainingProgram (Name, StartDate, EndDate, MaxAttendees)
+        //                               OUTPUT INSERTED.Id
+        //                               VALUES (@name, @startDate, @endDate, @maxAttendees)";
+        //            cmd.Parameters.Add(new SqlParameter("@name", trainingProgram.Name));
+        //            cmd.Parameters.Add(new SqlParameter("@startDate", trainingProgram.StartDate));
+        //            cmd.Parameters.Add(new SqlParameter("@endDate", trainingProgram.EndDate));
+        //            cmd.Parameters.Add(new SqlParameter("@maxAttendees", trainingProgram.MaxAttendees));
+
+        //            trainingProgram.Id = (int)await cmd.ExecuteScalarAsync();
+
+        //            return CreatedAtRoute("GetTrainingProgram", new { id = trainingProgram.Id }, trainingProgram);
+        //        }
+        //    }
+        //}
+
+        //// PUT api/TrainingPrograms/2
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> Put([FromRoute]int id, [FromBody] TrainingProgram trainingProgram)
+        //{
+        //    try
+        //    {
+        //        using (SqlConnection conn = Connection)
+        //        {
+        //            conn.Open();
+        //            using (SqlCommand cmd = conn.CreateCommand())
+        //            {
+        //                cmd.CommandText = @"
+        //                    UPDATE TrainingProgram
+        //                    SET Name = @name,
+        //                        StartDate = @startDate,
+        //                        EndDate = @endDate,
+        //                        MaxAttendees = @maxAttendees
+        //                    WHERE Id = @id";
+        //                cmd.Parameters.Add(new SqlParameter("@id", id));
+        //                cmd.Parameters.Add(new SqlParameter("@name", trainingProgram.Name));
+        //                cmd.Parameters.Add(new SqlParameter("@startDate", trainingProgram.StartDate));
+        //                cmd.Parameters.Add(new SqlParameter("@endDate", trainingProgram.EndDate));
+        //                cmd.Parameters.Add(new SqlParameter("@maxAttendees", trainingProgram.MaxAttendees));
+
+        //                int rowsAffected = await cmd.ExecuteNonQueryAsync();
+
+        //                if (rowsAffected > 0)
+        //                {
+        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
+        //                }
+
+        //                throw new Exception("No rows affected");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        if (!TrainingProgramExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+        //}
+
+        //// DELETE: api/TrainingPrograms/2
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Delete([FromRoute] int id)
+        //{
+        //    try
+        //    {
+        //        using (SqlConnection conn = Connection)
+        //        {
+        //            conn.Open();
+        //            using (SqlCommand cmd = conn.CreateCommand())
+        //            {
+        //                cmd.CommandText = @"DELETE FROM TrainingProgram WHERE Id = @id";
+        //                cmd.Parameters.Add(new SqlParameter("@id", id));
+
+        //                int rowsAffected = await cmd.ExecuteNonQueryAsync();
+        //                if (rowsAffected > 0)
+        //                {
+        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
+        //                }
+        //                throw new Exception("No rows affected");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        if (!TrainingProgramExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+        //}
+
+        //private bool TrainingProgramExists(int id)
+        //{
+        //    using (SqlConnection conn = Connection)
+        //    {
+        //        conn.Open();
+        //        using (SqlCommand cmd = conn.CreateCommand())
+        //        {
+        //            // More string interpolation
+        //            cmd.CommandText = "SELECT Id FROM TrainingProgram WHERE Id = @id";
+        //            cmd.Parameters.Add(new SqlParameter("@id", id));
+
+        //            SqlDataReader reader = cmd.ExecuteReader();
+
+        //            return reader.Read();
+        //        }
+        //    }
+        //}
     }
 }
