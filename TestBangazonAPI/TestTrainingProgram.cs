@@ -36,42 +36,38 @@ namespace TestBangazonAPI
                 */
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.True(trainingPrograms.Count > 0);
-                //Assert.NotNull(trainingPrograms[0].Customer);
-                //Assert.NotNull(trainingPrograms[0].ProductType);
             }
         }
-        //[Fact]
-        //public async Task Test_Get_Single_TrainingProgram()
-        //{
+        [Fact]
+        public async Task Test_Get_Single_TrainingProgram()
+        {
 
-        //    using (var client = new APIClientProvider().Client)
-        //    {
-        //        /*
-        //            ARRANGE
-        //        */
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
 
-        //        /*
-        //            ACT
-        //        */
-        //        var response = await client.GetAsync("/api/TrainingPrograms/1");
+                /*
+                    ACT
+                */
+                var response = await client.GetAsync("/api/TrainingPrograms/1");
 
 
-        //        string responseBody = await response.Content.ReadAsStringAsync();
-        //        var trainingProgram = JsonConvert.DeserializeObject<TrainingProgram>(responseBody);
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var trainingProgram = JsonConvert.DeserializeObject<TrainingProgram>(responseBody);
 
-        //        /*
-        //            ASSERT
-        //        */
-        //        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        //        //Assert.Equal("Honey - Liquid", trainingProgram.Title);
-        //        //Assert.Equal(0.6100, product.Price);
-        //        //Assert.Equal("ligula suspendisse ornare consequat lectus in est", product.Description);
-        //        //Assert.Equal(25, product.Quantity);
-        //        //Assert.Equal(2, product.CustomerId);
-        //        //Assert.Equal(1, product.ProductTypeId);
-        //        //Assert.NotNull(product);
-        //    }
-        //}
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("York University", trainingProgram.Name);
+                //Assert.Equal(2018-09-12 00:00:00.000, trainingProgram.StartDate);
+                //Assert.Equal(2020-04-29 00:00:00.000, trainingProgram.EndDate);
+                //Assert.Equal(82, trainingProgram.MaxAttendees);
+                //Assert.NotNull(trainingProgram);
+            }
+        }
         //[Fact]
         //public async Task Test_Create_And_Delete_TrainingProgram()
         //{
