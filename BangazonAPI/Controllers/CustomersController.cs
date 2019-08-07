@@ -32,24 +32,40 @@ namespace BangazonAPI.Controllers
 
         // GET api/values
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string q)
         {
+
+            string SqlCommandText = @"SELECT c.Id as CustomerId, c.FirstName, c.LastName FROM Customer c";
+
+            if (q != null)
+            {
+                SqlCommandText = $@"{SqlCommandText} WHERE (
+                c.FirstName LIKE @q
+                OR c.LastName LIKE @q
+                )";
+            }
+
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.Lastname
-                    FROM Customer c
-                    ";
-                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                    cmd.CommandText = SqlCommandText;
 
+
+                    if (q != null)
+                    {
+                        cmd.Parameters.Add(new SqlParameter("@q", $"%{q}%"));
+                    }
+
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
                     List<Customer> customers = new List<Customer>();
+
                     while (reader.Read())
                     {
                         Customer customer = new Customer
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Id = reader.GetInt32(reader.GetOrdinal("CustomerId")),
                             FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                             LastName = reader.GetString(reader.GetOrdinal("LastName")),
                             // You might have more columns
@@ -90,7 +106,7 @@ namespace BangazonAPI.Controllers
             }
             else
             {
-                SqlCommandText = @"c.Id AS CustomerId, c.FirstName, c.LastName FROM Customer";
+                SqlCommandText = @"SELECT c.Id AS CustomerId, c.FirstName, c.LastName FROM Customer c";
             }
 
             using (SqlConnection conn = Connection)

@@ -40,6 +40,23 @@ namespace TestBangazonAPI
         }
 
         [Fact]
+        public async Task Test_Get_All_Customers_Q()
+        {
+            using (var client = new APIClientProvider(). Client)
+            {
+                //ACT
+                var responseQ = await client.GetAsync("/api/customers?q=a");
+
+                string responseBodyQ = await responseQ.Content.ReadAsStringAsync();
+                var customersQ = JsonConvert.DeserializeObject<List<Customer>>(responseBodyQ);
+                
+                //ASSERT
+                Assert.Equal(HttpStatusCode.OK, responseQ.StatusCode);
+                Assert.Contains("a", customersQ[1].FirstName);
+            }
+        }
+
+        [Fact]
         public async Task Test_Get_Single_Customer()
         {
 
@@ -64,7 +81,36 @@ namespace TestBangazonAPI
                 Assert.Equal("Liè", customer.FirstName);
                 Assert.Equal("Dible", customer.LastName);
                 Assert.NotNull(customer);
+            }
+        }
 
+        [Fact]
+        public async Task Test_Get_Single_By_Product()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                var response = await client.GetAsync("/api/customers/2?_include=products");
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var customer = JsonConvert.DeserializeObject<Customer>(responseBody);
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.NotEmpty(customer.Products);
+            }
+        }
+
+        [Fact]
+        public async Task Test_Get_Single_By_Payments()
+        {
+           using (var client = new APIClientProvider().Client)
+            {
+                var response = await client.GetAsync("/api/customers/2?_include=payments");
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var customer = JsonConvert.DeserializeObject<Customer>(responseBody);
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.NotEmpty(customer.PaymentTypes);
             }
         }
 
@@ -111,7 +157,7 @@ namespace TestBangazonAPI
         [Fact]
         public async Task Test_Modify_Customer()
         {
-            string newFirstName = "Robert";
+            string newFirstName = "Rob";
 
             using (var client = new APIClientProvider().Client)
             {
@@ -121,12 +167,12 @@ namespace TestBangazonAPI
                 Customer ModifiedJohn= new Customer
                 {
                     FirstName = newFirstName,
-                    LastName = "Bobert"
+                    LastName = "Zombie"
                 };
                 var ModifiedJohnAsJSON = JsonConvert.SerializeObject(ModifiedJohn);
 
                 var response = await client.PutAsync(
-                    "/api/customers/5",
+                    "/api/customers/3",
                     new StringContent(ModifiedJohnAsJSON, Encoding.UTF8, "application/json")
                     );
                 string responseBody = await response.Content.ReadAsStringAsync();
@@ -136,7 +182,7 @@ namespace TestBangazonAPI
                 /*
                     GET section
                 */
-                var GetJohn = await client.GetAsync("/api/customers/5");
+                var GetJohn = await client.GetAsync("/api/customers/3");
                 GetJohn.EnsureSuccessStatusCode();
 
                 string GetJohnBody = await GetJohn.Content.ReadAsStringAsync();
