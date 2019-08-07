@@ -67,7 +67,7 @@ namespace BangazonAPI.Controllers
 
         // GET api/values/5
         [HttpGet("{id}", Name = "GetCustomer")]
-        public async Task<IActionResult> Get([FromRoute] int id, string include)
+        public async Task<IActionResult> Get([FromRoute] int id, string _include)
         {
             if (!CustomerExists(id))
             {
@@ -76,15 +76,15 @@ namespace BangazonAPI.Controllers
 
             string SqlCommandText;
 
-            if(include == "products")
+            if(_include == "products")
             {
                 SqlCommandText = @"SELECT c.Id AS CustomerId, c.FirstName, c.LastName, 
                 p.Id AS ProductId, p.Title, p.Price, p.Description, p.Quantity, p.ProductTypeId 
                 FROM Customer c JOIN Product p ON c.Id = p.CustomerId";
             }
-            else if(include == "payments")
+            else if(_include == "payments")
             {
-                SqlCommandText = @"c.Id AS CustomerId, c.FirstName, c.LastName, 
+                SqlCommandText = @"SELECT c.Id AS CustomerId, c.FirstName, c.LastName, 
                 pt.Id AS PaymentTypeId, pt.AcctNumber, pt.Name, pt.CustomerId 
                 FROM Customer c JOIN PaymentType pt ON c.Id = pt.CustomerId";
             }
@@ -100,7 +100,7 @@ namespace BangazonAPI.Controllers
                 {
                     cmd.CommandText = $"{SqlCommandText} WHERE c.id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
-                    SqlDataReader reader = cmd.ExecuteReader();
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     Customer customer = null;
 
@@ -116,7 +116,7 @@ namespace BangazonAPI.Controllers
                             };
                         }
 
-                        if(include == "products")
+                        if(_include == "products")
                         {
                             if(!reader.IsDBNull(reader.GetOrdinal("ProductId")))
                             {
@@ -133,7 +133,19 @@ namespace BangazonAPI.Controllers
                                 );
                             }
                         }
-                    }
+
+                        if(_include == "payments")
+                        {
+                            if (!reader.IsDBNull(reader.GetOrdinal("PaymentTypeId")))
+                                customer.PaymentTypes.Add(
+                                    new PaymentType
+                                    {
+                                        Id = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
+                                        AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber")),
+                                        Name = reader.GetString(reader.GetOrdinal("Name"))
+                                    });
+                                }
+                            }
 
 
                     reader.Close();
