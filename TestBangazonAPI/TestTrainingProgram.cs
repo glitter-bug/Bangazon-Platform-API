@@ -143,7 +143,7 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var response = await client.PutAsync("/api/TrainingPrograms/3",
+                var response = await client.PutAsync("/api/TrainingPrograms/2",
                      new StringContent(ModifiedFeatherFactoryAsJSON, Encoding.UTF8, "application/json"));
 
 
@@ -151,7 +151,7 @@ namespace TestBangazonAPI
 
                 Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-                var GetFeatherFactory = await client.GetAsync("/api/TrainingPrograms/4");
+                var GetFeatherFactory = await client.GetAsync("/api/TrainingPrograms/2");
                 GetFeatherFactory.EnsureSuccessStatusCode();
 
                 string GetFeatherFactoryBody = await GetFeatherFactory.Content.ReadAsStringAsync();

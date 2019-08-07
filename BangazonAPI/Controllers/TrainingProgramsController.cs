@@ -118,62 +118,58 @@ namespace BangazonAPI.Controllers
 
                     trainingProgram.Id = (int)await cmd.ExecuteScalarAsync();
 
-                    return CreatedAtRoute("GetProduct", new { id = trainingProgram.Id }, trainingProgram);
+                    return CreatedAtRoute("GetTrainingProgram", new { id = trainingProgram.Id }, trainingProgram);
                 }
             }
         }
 
-        // PUT api/TrainingPrograms/3
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> Put([FromRoute]int id, [FromBody] Product product)
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection conn = Connection)
-        //        {
-        //            conn.Open();
-        //            using (SqlCommand cmd = conn.CreateCommand())
-        //            {
-        //                cmd.CommandText = @"
-        //                    UPDATE Product
-        //                    SET Title = @title,
-        //                        Price = @price,
-        //                        Description = @description,
-        //                        Quantity = @quantity,
-        //                        ProductTypeId = @productTypeId,
-        //                        CustomerId = @customerId
-        //                    WHERE Id = @id";
-        //                cmd.Parameters.Add(new SqlParameter("@id", id));
-        //                cmd.Parameters.Add(new SqlParameter("@title", product.Title));
-        //                cmd.Parameters.Add(new SqlParameter("@price", product.Price));
-        //                cmd.Parameters.Add(new SqlParameter("@description", product.Description));
-        //                cmd.Parameters.Add(new SqlParameter("@quantity", product.Quantity));
-        //                cmd.Parameters.Add(new SqlParameter("@productTypeId", product.ProductTypeId));
-        //                cmd.Parameters.Add(new SqlParameter("@customerId", product.CustomerId));
+        // PUT api/TrainingPrograms/2
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put([FromRoute]int id, [FromBody] TrainingProgram trainingProgram)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            UPDATE TrainingProgram
+                            SET Name = @name,
+                                StartDate = @startDate,
+                                EndDate = @endDate,
+                                MaxAttendees = @maxAttendees
+                            WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+                        cmd.Parameters.Add(new SqlParameter("@name", trainingProgram.Name));
+                        cmd.Parameters.Add(new SqlParameter("@startDate", trainingProgram.StartDate));
+                        cmd.Parameters.Add(new SqlParameter("@endDate", trainingProgram.EndDate));
+                        cmd.Parameters.Add(new SqlParameter("@maxAttendees", trainingProgram.MaxAttendees));
 
-        //                int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
-        //                if (rowsAffected > 0)
-        //                {
-        //                    return new StatusCodeResult(StatusCodes.Status204NoContent);
-        //                }
+                        if (rowsAffected > 0)
+                        {
+                            return new StatusCodeResult(StatusCodes.Status204NoContent);
+                        }
 
-        //                throw new Exception("No rows affected");
-        //            }
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        if (!ProductExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-        //}
+                        throw new Exception("No rows affected");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                if (!TrainingProgramExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
 
         // DELETE: api/TrainingPrograms/2
         [HttpDelete("{id}")]
