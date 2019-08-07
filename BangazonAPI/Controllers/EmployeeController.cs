@@ -39,8 +39,9 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, e.DepartmentId, e.IsSuperVisor
-                    FROM Employee e WHERE 1 = 1";
+                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, e.DepartmentId, e.IsSuperVisor, d.Name AS DepartmentName
+                    FROM Department d 
+                    JOIN Employee e ON d.Id = e.DepartmentId";
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<Employee> Employees = new List<Employee>();
@@ -74,8 +75,10 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, e.DepartmentId, e.IsSuperVisor
-                    FROM Employee e WHERE Id = @id";
+                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, e.DepartmentId, e.IsSuperVisor, d.Name AS DepartmentName
+                    FROM Department d 
+                    JOIN Employee e ON d.Id = e.DepartmentId
+                    WHERE e.Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
