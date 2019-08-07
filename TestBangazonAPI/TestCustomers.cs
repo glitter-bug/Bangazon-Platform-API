@@ -61,8 +61,9 @@ namespace TestBangazonAPI
                 ASSERT
             */
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("Liè", customer.FirstName);
-            Assert.Equal("Dible", customer.LastName);
+                Assert.Equal("Liè", customer.FirstName);
+                Assert.Equal("Dible", customer.LastName);
+                Assert.NotNull(customer);
 
             }
         }
@@ -110,7 +111,7 @@ namespace TestBangazonAPI
         [Fact]
         public async Task Test_Modify_Customer()
         {
-            string newFirstName = "Ron";
+            string newFirstName = "Robert";
 
             using (var client = new APIClientProvider().Client)
             {
@@ -120,13 +121,13 @@ namespace TestBangazonAPI
                 Customer ModifiedJohn= new Customer
                 {
                     FirstName = newFirstName,
-                    LastName = "Doe"
+                    LastName = "Bobert"
                 };
                 var ModifiedJohnAsJSON = JsonConvert.SerializeObject(ModifiedJohn);
 
                 var response = await client.PutAsync(
                     "/api/customers/5",
-                    new StringContent(ModifiedJohnAsJSON, Encoding.UTF8, "applications/json")
+                    new StringContent(ModifiedJohnAsJSON, Encoding.UTF8, "application/json")
                     );
                 string responseBody = await response.Content.ReadAsStringAsync();
 

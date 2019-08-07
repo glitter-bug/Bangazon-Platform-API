@@ -40,7 +40,8 @@ namespace BangazonAPI.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"SELECT c.Id, c.FirstName, c.Lastname
-                    FROM Customer c";
+                    FROM Customer c
+                    ";
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<Customer> customers = new List<Customer>();
@@ -66,35 +67,21 @@ namespace BangazonAPI.Controllers
 
         // GET api/values/5
         [HttpGet("{id}", Name = "GetCustomer")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> Get([FromRoute] int id, string include)
         {
-            using (SqlConnection conn = Connection)
+            if (!CustomerExists(id))
             {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
-                {
-                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName FROM Customer c WHERE Id = @id";
-                    cmd.Parameters.Add(new SqlParameter("@id", id));
-                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                return new StatusCodeResult(StatusCodes.Status404NotFound);
+            }
 
-                    Customer customer = null;
-                    if (reader.Read())
-                    {
-                        customer = new Customer
-                        {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                            // You might have more columns
-                        };
-                    }
+            string SqlCommandText;
 
-                    reader.Close();
-
-                    return Ok(customer);
-                }
+            if(include == "products")
+            {
+                SqlCommandText = @"SELECT c.Id AS CustomerId, c.FirstName, c.LastName, p.Id AS ProductId, p.Title, p.Price, p.Description, p.Quantity, p.ProductTypeId FROM Customer c JOIN Product p ON c.Id = p.CustomerId"
             }
         }
+
 
         // POST api/values
         [HttpPost]
@@ -115,7 +102,7 @@ namespace BangazonAPI.Controllers
                     cmd.Parameters.Add(new SqlParameter("@lastName", customer.LastName));
 
                     customer.Id = (int)await cmd.ExecuteScalarAsync();
-                    
+
 
                     return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
                 }
@@ -133,13 +120,11 @@ namespace BangazonAPI.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        cmd.CommandText = @"
-                            UPDATE Customer
-                            SET FirstName = @firstName
-                            LastName = @lastName
-                            WHERE Id = @id
-                        ";
-                        cmd.Parameters.Add(new SqlParameter("@id", customer.Id));
+                        cmd.CommandText = @"UPDATE Customer
+                            SET FirstName = @firstName,
+                                LastName = @lastName
+                            WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
                         cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
                         cmd.Parameters.Add(new SqlParameter("@lastName", customer.LastName));
 
