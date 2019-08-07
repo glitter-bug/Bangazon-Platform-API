@@ -174,7 +174,7 @@ namespace TestBangazonAPI
                 */
                 TrainingProgram trainingProgram = new TrainingProgram()
                 {
-                    Name = "Christmas Scented Basket Weaving Class ",
+                    Name = "Christmas Scented Basket Weaving Class",
                     StartDate = new DateTime(2045, 12, 25),
                     EndDate = new DateTime(2046, 05, 11),
                     MaxAttendees = 300

@@ -197,7 +197,6 @@ namespace BangazonAPI.Controllers
                                 StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
                                 EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
                                 MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"))
-                                // You might have more columns
                             };
                         }
                         reader.Close();
@@ -213,6 +212,7 @@ namespace BangazonAPI.Controllers
                                                          DELETE FROM TrainingProgram
                                                          WHERE Id = @id
                                                           ";
+                                    // we have to delete from the table that holds the foreign key for Training Programs.
                                     cmd1.Parameters.Add(new SqlParameter("@id", id));
 
                                     int rowsAffected = cmd1.ExecuteNonQuery();
@@ -243,6 +243,7 @@ namespace BangazonAPI.Controllers
                 }
             }
         }
+        //A method to check if a training program existsxc
         private bool TrainingProgramExists(int id)
         {
             using (SqlConnection conn = Connection)
