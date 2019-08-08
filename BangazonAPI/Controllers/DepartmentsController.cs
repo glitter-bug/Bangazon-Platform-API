@@ -29,22 +29,23 @@ namespace BangazonAPI.Controllers
                 return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             }
         }
-        // GET api/Departments
+        // GET api/values
         [HttpGet]
-        public async Task<IActionResult> Get(string _include)
+        public async Task<IActionResult> Get([FromQuery] string _include, string _filter, int? _greaterThan)
         {
-            string SqlCommandText;
+            string SqlCommandText = @"SELECT d.Id as DepartmentId, d.Name, d.Budget
+                                FROM Department d";
 
-            if(_include == "employees")
+            if (_include == "employees")
             {
-                SqlCommandText = @"SELECT d.Id, d.Name, d.Budget,e.Id AS EmployeeId, e.FirstName, e.LastName, e.IsSuperVisor
-                FROM Department d 
-                JOIN Employee e ON d.Id = e.Id";
+                SqlCommandText = @"SELECT d.Id as DepartmentId, d.Name, d.Budget,
+                                e.Id as EmployeeId, e.FirstName, e.LastName, e.IsSupervisor, e.DepartmentId
+                                FROM Department d
+                                LEFT JOIN Employee e ON d.ID = e.DepartmentId";
             }
-            else
+            if (_filter == "budget" && _greaterThan != null)
             {
-                SqlCommandText = @"SELECT d.Id, d.Name, d.Budget
-                FROM Department d";
+                SqlCommandText = $"{SqlCommandText} WHERE d.Budget >= @greaterThan";
             }
 
             using (SqlConnection conn = Connection)
@@ -52,36 +53,68 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-
                     cmd.CommandText = SqlCommandText;
 
+                    if (_filter == "budget" && _greaterThan != null)
+                    {
+                        cmd.Parameters.Add(new SqlParameter("@greaterThan", _greaterThan));
+
+                    }
 
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
                     List<Department> departments = new List<Department>();
                     while (reader.Read())
                     {
-                        Department department = new Department()
+                        Department department = new Department
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Id = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
                             Name = reader.GetString(reader.GetOrdinal("Name")),
                             Budget = reader.GetInt32(reader.GetOrdinal("Budget")),
                         };
 
                         if (_include == "employees")
                         {
+                            Employee employee = new Employee();
                             if (!reader.IsDBNull(reader.GetOrdinal("EmployeeId")))
-                                department.Employees.Add(new Employee
-                                {
-                                    Id = reader.GetInt32(reader.GetOrdinal("EmployeeId")),
-                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                                    IsSuperVisor =  reader.GetBoolean(reader.GetOrdinal("IsSuperVisor"))
-                                });
-                        }
+                            {
+                                employee.Id = reader.GetInt32(reader.GetOrdinal("EmployeeId"));
+                                employee.FirstName = reader.GetString(reader.GetOrdinal("FirstName"));
+                                employee.LastName = reader.GetString(reader.GetOrdinal("LastName"));
+                                employee.IsSuperVisor = reader.GetBoolean(reader.GetOrdinal("IsSupervisor"));
+                                employee.DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId"));
+                            }
+                            else
+                            {
+                                employee = null;
+                            };
 
-                        departments.Add(department);
+                            if (departments.Any(d => d.Id == department.Id))
+                            {
+                                Department existingDepartment = departments.Find(d => d.Id == department.Id);
+                                existingDepartment.Employees.Add(employee);
+                            }
+                            else
+                            {
+                                department.Employees.Add(employee);
+                                departments.Add(department);
+                            }
+                        }
+                        else
+                        {
+                            if (departments.Any(d => d.Id == department.Id))
+                            {
+                                Department existingDepartment = departments.Find(d => d.Id == department.Id);
+                            }
+                            else
+                            {
+                                departments.Add(department);
+                            }
+                        }
                     }
+
                     reader.Close();
+
                     return Ok(departments);
                 }
             }
