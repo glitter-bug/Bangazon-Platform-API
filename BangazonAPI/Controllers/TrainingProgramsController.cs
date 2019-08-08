@@ -32,33 +32,74 @@ namespace BangazonAPI.Controllers
 
         // GET api/TrainingPrograms
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] string completed)
         {
-
-
+            // employee who sign up for a Training Program are included in the response
+            string SqlCommandText = @"SELECT tp.Id, tp.Name, tp.StartDate, tp.EndDate, tp.MaxAttendees, 
+                                            e.FirstName, e.LastName 
+                                        FROM TrainingProgram tp
+                                        JOIN EmployeeTraining et ON et.TrainingProgramId = tp.id
+                                        JOIN Employee e ON e.Id = et.EmployeeId;";
+            if (completed == "false")
+            {
+                // can view Training Programs only starting today or in the future
+                SqlCommandText = @"SELECT tp.Id, tp.Name, tp.StartDate, tp.EndDate, tp.MaxAttendees, 
+                                            e.FirstName, e.LastName FROM TrainingProgram tp
+                                        JOIN EmployeeTraining et ON et.TrainingProgramId = tp.id
+                                        JOIN Employee e ON e.Id = et.EmployeeId
+                                        WHERE tp.EndDate > CURRENT_TIMESTAMP;";
+            }
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
+                    cmd.CommandText = SqlCommandText;
 
-                    cmd.CommandText = @"SELECT tp.Id, tp.Name, tp.StartDate, tp.EndDate, tp.MaxAttendees FROM TrainingProgram tp";
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
                     List<TrainingProgram> trainingPrograms = new List<TrainingProgram>();
                     while (reader.Read())
                     {
-                        TrainingProgram trainingProgram = new TrainingProgram
+
+                        int Id = reader.GetInt32(reader.GetOrdinal("Id"));
+                        string Name = reader.GetString(reader.GetOrdinal("Name"));
+                        DateTime StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate"));
+                        DateTime EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate"));
+                        int MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"));
+                        string FirstName = reader.GetString(reader.GetOrdinal("FirstName"));
+                        string LastName = reader.GetString(reader.GetOrdinal("LastName"));
+
+                        Employee employee = new Employee()
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                            StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
-                            EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
-                            MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"))
+                            FirstName = FirstName,
+                            LastName = LastName
                         };
 
-                        trainingPrograms.Add(trainingProgram);
+                        if (!trainingPrograms.Any(train => train.Id == Id))
+                        {
+                            TrainingProgram trainingProgram = new TrainingProgram()
+                            {
+                                Id = Id,
+                                Name = Name,
+                                StartDate = StartDate,
+                                EndDate = EndDate,
+                                MaxAttendees = MaxAttendees,
+                                AttendingEmployees = new List<Employee>()
+                            };
+
+                            trainingProgram.AttendingEmployees.Add(employee);
+                            trainingPrograms.Add(trainingProgram);
+                        }
+                        else
+                        {
+                            var findProgram = trainingPrograms.Find(train => train.Id == Id);
+                            findProgram.AttendingEmployees.Add(employee);
+                        }
                     }
+
                     reader.Close();
+
                     return Ok(trainingPrograms);
                 }
             }
