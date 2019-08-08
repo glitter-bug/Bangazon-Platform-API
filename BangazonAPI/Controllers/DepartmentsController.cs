@@ -31,16 +31,31 @@ namespace BangazonAPI.Controllers
         }
         // GET api/Departments
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string _include)
         {
+            string SqlCommandText;
+
+            if(_include == "employees")
+            {
+                SqlCommandText = @"SELECT d.Id, d.Name, d.Budget,e.Id AS EmployeeId, e.FirstName, e.LastName, e.IsSuperVisor
+                FROM Department d 
+                JOIN Employee e ON d.Id = e.Id";
+            }
+            else
+            {
+                SqlCommandText = @"SELECT d.Id, d.Name, d.Budget
+                FROM Department d";
+            }
+
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
 
-                    cmd.CommandText = @"SELECT Id, Name, Budget
-                                        FROM Department";
+                    cmd.CommandText = SqlCommandText;
+
+
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
                     List<Department> departments = new List<Department>();
                     while (reader.Read())
@@ -51,6 +66,19 @@ namespace BangazonAPI.Controllers
                             Name = reader.GetString(reader.GetOrdinal("Name")),
                             Budget = reader.GetInt32(reader.GetOrdinal("Budget")),
                         };
+
+                        if (_include == "employees")
+                        {
+                            if (!reader.IsDBNull(reader.GetOrdinal("EmployeeId")))
+                                department.Employees.Add(new Employee
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("EmployeeId")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                    IsSuperVisor =  reader.GetBoolean(reader.GetOrdinal("IsSuperVisor"))
+                                });
+                        }
+
                         departments.Add(department);
                     }
                     reader.Close();
