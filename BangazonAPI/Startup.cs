@@ -29,12 +29,13 @@ namespace BangazonAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
+            // Reference - https://docs.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-2.2 enable Cross Origin Requests (CORS) in an ASP.NET app
             services.AddCors(options =>
             {
                 options.AddPolicy(MyAllowSpecificOrigins,
                 builder =>
                 {
+                    // below are the origins alllowed for this CORS policy 
                     builder.WithOrigins("http://bangazon.com",
                                         "http://localhost:5001");
                 });

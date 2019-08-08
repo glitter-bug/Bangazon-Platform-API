@@ -182,7 +182,7 @@ namespace BangazonAPI.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        cmd.CommandText = @"SELECT Id, [Name], StartDate, EndDate, MaxAttendees 
+                        cmd.CommandText = @"SELECT Id, Name, StartDate, EndDate, MaxAttendees 
                                         FROM TrainingProgram 
                                         WHERE Id = @id";
                         cmd.Parameters.Add(new SqlParameter("@id", id));
@@ -202,20 +202,20 @@ namespace BangazonAPI.Controllers
                         reader.Close();
                         if (trainingProgram.StartDate > DateTime.Now)
                         {
-                            using (SqlConnection conn1 = Connection)
+                            using (SqlConnection secondConn = Connection)
                             {
-                                conn1.Open();
-                                using (SqlCommand cmd1 = conn1.CreateCommand())
+                                secondConn.Open();
+                                using (SqlCommand secondCmd = secondConn.CreateCommand())
                                 {
-                                    cmd1.CommandText = @"DELETE FROM EmployeeTraining 
+                                    secondCmd.CommandText = @"DELETE FROM EmployeeTraining 
                                                          WHERE TrainingProgramId = @id
                                                          DELETE FROM TrainingProgram
                                                          WHERE Id = @id
                                                           ";
-                                    // we have to delete from the table that holds the foreign key for Training Programs.
-                                    cmd1.Parameters.Add(new SqlParameter("@id", id));
+                                    // we have to delete from the table that holds the foreign key for Training Programs. We cant delete Training programs directly because there is a FK in use in EmployeeTraining Join Table.
+                                    secondCmd.Parameters.Add(new SqlParameter("@id", id));
 
-                                    int rowsAffected = cmd1.ExecuteNonQuery();
+                                    int rowsAffected = secondCmd.ExecuteNonQuery();
                                     if (rowsAffected > 0)
                                     {
                                         return new StatusCodeResult(StatusCodes.Status204NoContent);
