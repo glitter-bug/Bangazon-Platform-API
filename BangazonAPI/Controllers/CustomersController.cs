@@ -32,18 +32,28 @@ namespace BangazonAPI.Controllers
 
         // GET api/values
         [HttpGet]
-        public async Task<IActionResult> Get(string q)
+        public async Task<IActionResult> Get(string q, string active)
         {
 
-            string SqlCommandText = @"SELECT c.Id as CustomerId, c.FirstName, c.LastName FROM Customer c";
+            string SqlCommandText;
 
             if (q != null)
             {
-                SqlCommandText = $@"{SqlCommandText} WHERE (
+                SqlCommandText = $@"SELECT c.Id as CustomerId, c.FirstName, c.LastName 
+                FROM Customer c WHERE (
                 c.FirstName LIKE @q
                 OR c.LastName LIKE @q
                 )";
             }
+            else if (active == "false")
+            {
+                SqlCommandText = @"SELECT c.Id AS CustomerId, c.FirstName, c.LastName, o.Id AS OrderId FROM Customer c LEFT JOIN [Order] o ON c.Id = o.Id WHERE o.Id IS NULL";
+            }
+            else
+            {
+                SqlCommandText = @"SELECT c.Id as CustomerId, c.FirstName, c.LastName FROM Customer c";
+            }
+
 
             using (SqlConnection conn = Connection)
             {
