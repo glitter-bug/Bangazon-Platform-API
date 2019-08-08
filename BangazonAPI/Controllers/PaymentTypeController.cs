@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-namespace BangazonAPI.Controllersgv
+namespace BangazonAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
